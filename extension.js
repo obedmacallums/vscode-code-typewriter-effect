@@ -60,7 +60,7 @@ function activate(context) {
                     if (!typingProcessRunning) {
                         return; // If the typing process is stopped, exit the function
                     }
-                
+
                     if (charIndex <= line.length) {
                         let char = line.charAt(charIndex) || "";
                         editor
@@ -72,7 +72,28 @@ function activate(context) {
                             })
                             .then(() => {
                                 charIndex++;
-                                let delay = char === " " ? 1 : typingSpeed; // If the character is a space, use a shorter delay
+                                let delay
+                                // If the character is... use a shorter delay
+                                switch (char) {
+                                    case " ":
+                                    case "(":
+                                    case ")":
+                                    case "{":
+                                    case "}":
+                                    case "[":
+                                    case "]":
+                                        delay = 2;
+                                        break;
+                                    default:
+                                        delay = typingSpeed;
+                                        break;
+                                }
+                                // Move the selection to the current position to scroll the view
+                                editor.revealRange(new vscode.Range(
+                                    new vscode.Position(lineIndex, charIndex),
+                                    new vscode.Position(lineIndex, charIndex)
+                                ), vscode.TextEditorRevealType.Default);
+
                                 setTimeout(insertNextCharacter, delay);
                             });
                     } else {
