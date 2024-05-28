@@ -60,18 +60,20 @@ function activate(context) {
                     if (!typingProcessRunning) {
                         return; // If the typing process is stopped, exit the function
                     }
-
+                
                     if (charIndex <= line.length) {
+                        let char = line.charAt(charIndex) || "";
                         editor
                             .edit((editBuilder) => {
                                 editBuilder.insert(
                                     new vscode.Position(lineIndex, charIndex),
-                                    line.charAt(charIndex) || ""
+                                    char
                                 );
                             })
                             .then(() => {
                                 charIndex++;
-                                setTimeout(insertNextCharacter, typingSpeed);
+                                let delay = char === " " ? 1 : typingSpeed; // If the character is a space, use a shorter delay
+                                setTimeout(insertNextCharacter, delay);
                             });
                     } else {
                         // Move to the next line without adding an extra newline when it's the last line
