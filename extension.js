@@ -26,9 +26,17 @@ function activate(context) {
         .getConfiguration("code-typewriter-effect")
         .get("maxJumps"); // Get the max jumps value from the settings
 
+    let specialWords = vscode.workspace
+        .getConfiguration("code-typewriter-effect")
+        .get("specialWords"); // Get the special words from the settings
+
+    let specialWordsDelay = vscode.workspace
+        .getConfiguration("code-typewriter-effect")
+        .get("specialWordsDelay"); // Get the special words delay from the settings
+
     let jumpPositions = []; // Array to store positions where jumps will be applied
 
-    console.log(typingSpeedMin, typingSpeedMax, jump, maxJumps);
+    console.log(typingSpeedMin, typingSpeedMax, jump, maxJumps, specialWords);
 
     function getRandomDelay() {
         return Math.floor(Math.random() * (typingSpeedMax - typingSpeedMin + 1)) + typingSpeedMin;
@@ -119,8 +127,10 @@ function activate(context) {
                                 charIndex++;
                                 let delay;
 
-                                // Apply jump delay if the current position is in jumpPositions
-                                if (jumpPositions.some(pos => pos.lineIndex === lineIndex && pos.charIndex === charIndex)) {
+                                // Apply faster delay for lines containing any word in specialWords
+                                if (specialWords.some(word => line.includes(word))) {
+                                    delay = specialWordsDelay;
+                                } else if (jumpPositions.some(pos => pos.lineIndex === lineIndex && pos.charIndex === charIndex)) {
                                     delay = jump;
                                 } else {
                                     // If the character is... use a shorter delay

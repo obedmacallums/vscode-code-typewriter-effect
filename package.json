@@ -40,13 +40,26 @@
                 },
                 "code-typewriter-effect.jump": {
                     "type": "number",
-                    "default": 100,
+                    "default": 150,
                     "description": "The jump delay for the typewriter effect"
                 },
                 "code-typewriter-effect.maxJumps": {
                     "type": "number",
                     "default": 10,
                     "description": "Maximum number of jumps during typing effect"
+                },
+                "code-typewriter-effect.specialWords": {
+                    "type": "array",
+                    "default": ["import"],
+                    "description": "List of words that trigger a special delay",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "code-typewriter-effect.specialWordsDelay": {
+                    "type": "number",
+                    "default": 5,
+                    "description": "Delay applied to lines containing special words, in milliseconds"
                 }
             }
         },
