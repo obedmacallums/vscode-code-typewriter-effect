@@ -10,11 +10,53 @@ function activate(context) {
 
     let typingProcessRunning = false; // Variable to track if the typing process is running
 
-    let typingSpeed = vscode.workspace
+    let typingSpeedMin = vscode.workspace
         .getConfiguration("code-typewriter-effect")
-        .get("codeTypewriterEffectTypingSpeed");
+        .get("codeTypewriterEffectTypingSpeedMin");
 
-    console.log(typingSpeed);
+    let typingSpeedMax = vscode.workspace
+        .getConfiguration("code-typewriter-effect")
+        .get("codeTypewriterEffectTypingSpeedMax");
+
+    let jump = vscode.workspace
+        .getConfiguration("code-typewriter-effect")
+        .get("jump"); // Get the jump value from the settings
+
+    let maxJumps = vscode.workspace
+        .getConfiguration("code-typewriter-effect")
+        .get("maxJumps"); // Get the max jumps value from the settings
+
+    let jumpPositions = []; // Array to store positions where jumps will be applied
+
+    console.log(typingSpeedMin, typingSpeedMax, jump, maxJumps);
+
+    function getRandomDelay() {
+        return Math.floor(Math.random() * (typingSpeedMax - typingSpeedMin + 1)) + typingSpeedMin;
+    }
+
+    function selectRandomJumpPositions(text, eol) {
+        let lines = text.split(eol);
+        let totalChars = text.length;
+        
+        // Select random positions
+        for (let i = 0; i < maxJumps; i++) {
+            let randomPos = Math.floor(Math.random() * totalChars);
+            let charCount = 0;
+            
+            // Find the corresponding line and character index
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                let line = lines[lineIndex];
+                
+                if (charCount + line.length >= randomPos) {
+                    let charIndex = randomPos - charCount;
+                    jumpPositions.push({ lineIndex, charIndex });
+                    break;
+                }
+                
+                charCount += line.length + eol.length;
+            }
+        }
+    }
 
     let disposableType = vscode.commands.registerCommand(
         "code-typewriter-effect.retype",
@@ -32,6 +74,9 @@ function activate(context) {
 
             let text = editor.document.getText();
             let eol = editor.document.eol === vscode.EndOfLine.CRLF ? "\r\n" : "\n"; // Detect EOL
+
+            jumpPositions = []; // Reset the jump positions
+            selectRandomJumpPositions(text, eol);
 
             editor
                 .edit((editBuilder) => {
@@ -72,22 +117,29 @@ function activate(context) {
                             })
                             .then(() => {
                                 charIndex++;
-                                let delay
-                                // If the character is... use a shorter delay
-                                switch (char) {
-                                    case " ":
-                                    case "(":
-                                    case ")":
-                                    case "{":
-                                    case "}":
-                                    case "[":
-                                    case "]":
-                                        delay = 2;
-                                        break;
-                                    default:
-                                        delay = typingSpeed;
-                                        break;
+                                let delay;
+
+                                // Apply jump delay if the current position is in jumpPositions
+                                if (jumpPositions.some(pos => pos.lineIndex === lineIndex && pos.charIndex === charIndex)) {
+                                    delay = jump;
+                                } else {
+                                    // If the character is... use a shorter delay
+                                    switch (char) {
+                                        case " ":
+                                        case "(":
+                                        case ")":
+                                        case "{":
+                                        case "}":
+                                        case "[":
+                                        case "]":
+                                            delay = 2;
+                                            break;
+                                        default:
+                                            delay = getRandomDelay();
+                                            break;
+                                    }
                                 }
+
                                 // Move the selection to the current position to scroll the view
                                 editor.revealRange(new vscode.Range(
                                     new vscode.Position(lineIndex, charIndex),
@@ -106,7 +158,7 @@ function activate(context) {
                                     editBuilder.insert(new vscode.Position(lineIndex - 1, lines[lineIndex - 1].length), eol);
                                 })
                                 .then(() => {
-                                    setTimeout(() => type(lineIndex, charIndex), typingSpeed);
+                                    setTimeout(() => type(lineIndex, charIndex), getRandomDelay());
                                 });
                         }
                     }
