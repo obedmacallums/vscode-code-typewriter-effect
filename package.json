@@ -4,7 +4,7 @@
     "publisher": "junsantilla",
     "description": "This VSCode extension adds a typewriter effect to your code when activated.",
     "version": "0.3.0",
-    "icon": "/cte.png",
+    "icon": "cte.png",
     "engines": {
         "vscode": "^1.77.0"
     },
