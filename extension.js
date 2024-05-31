@@ -39,6 +39,13 @@ function activate(context) {
     console.log(typingSpeedMin, typingSpeedMax, jump, maxJumps, specialWords);
 
     function getRandomDelay() {
+        if (typingSpeedMin === typingSpeedMax) {
+            return typingSpeedMin;
+        }
+        if (typingSpeedMin > typingSpeedMax) {
+            [typingSpeedMin, typingSpeedMax] = [typingSpeedMax, typingSpeedMin];
+        }
+
         return Math.floor(Math.random() * (typingSpeedMax - typingSpeedMin + 1)) + typingSpeedMin;
     }
 
